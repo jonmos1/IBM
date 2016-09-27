@@ -9,12 +9,6 @@ module INPUT
     use MESSAGE
     implicit none
 
-
-    contains
-!===========================================================
-
-
-    subroutine InputDomain(x_N,x_min,x_max,dx,flag_2D)
     !dummy variables:
     integer, dimension(:,:) :: x_N
     real, dimension(:,:)    :: x_min, x_max
@@ -45,41 +39,6 @@ module INPUT
     x3_min = 0      !lower domain bound in Z-direction
     x3_max = 0      !upper domain bound in Z-direction
 
-    !PARSING INPUT INTO VECTOR FORM:______________________________________
-    !TODO(JON): Perform input checks first to confirm that input is valid
-    x_N(1,:)    = (/x1_N, x2_N, x3_N/)
-    x_min(1,:)  = (/x1_min,x2_min,x3_min/)
-    x_max(1,:)  = (/x1_max,x2_max,x3_max/)
-    dx(1,:)     = (/  ( (x_max(1,d)-x_min(1,d)) / (x_N(1,d) - 1) , d=1,3)   /) !dx = (x_max-x_min)/(i-1)
-
-    call Checks2D(x_N,x_min,x_max,flag_2D)
-!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    !Check for NaN and Inf  -   if xmin=xmax, we get NaN, and if xN=1, we get inf... both means 2Dproblem
-    do d = 1,3
-        !TODO(JON): is there a better way of ignoring NaNB than to put them = sero? (makes mistakes later in program)
-        if(isnan(dx(1,d)).OR.((dx(1,d)+1).EQ.dx(1,d))) then !If dx(d,1).EQ.NaN .OR dx(d,1).EQ.INF
-            !If 2-Dimensional, then the mesh-resolution from  line above will be NAN or INF (due to divison by 0) Solve this by setting it equal to zero
-            x_max(1,d) = x_min(1,d)
-            dx(1,d) = 0
-        else if( (x_min(1,d).EQ.x_max(1,d)) .AND. (x_N(1,d).NE.1) ) then
-            !if there are many domain points defined on same position
-            write(*,70) 'Error! Check that upper and lower domain boundaries are not equal in direction ', d, '.'
-
-            !fatal error - call for exit of program when check is done
-            flag_exit = .TRUE.
-        end if
-    end do
-70 format(A,I1,A)
-
-    !Exit program if errors occur
-    if(flag_exit) then
-    call MessageExit()
-    end if
-
-!:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    end subroutine InputDomain
-!=================================================================
 
 
 
